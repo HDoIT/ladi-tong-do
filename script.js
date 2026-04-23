@@ -35,13 +35,9 @@
         // 4. Copy URL vào đây
         googleSheetURL: 'https://script.google.com/macros/s/AKfycbyOVX-fVMdPR2VdF_-nq1b41h9AgPlQBDk3s_-oylK7dPWPjSBrVlH0dTBWVsKYp8o/exec',
 
-        // ===== DANH SÁCH TEAM ẨN DANH =====
-        // Cách dùng URL: giadunggreen.online/?abcxyz -> Code tự map vào ID Sheet đằng sau
-        sheetMap: {
-            'abcxyz': 'Khai_bao_ID_Script_cua_sheet_ABCXYZ_o_day',
-            'xyzabc': 'Khai_bao_ID_Script_cua_sheet_XYZABC_o_day',
-            // Bạn có thể thêm bao nhiêu tuỳ ý theo cú pháp 'tham_số': 'Mã_ID_Sheet'
-        },
+        // ===== CHẠY ĐA CHIẾN DỊCH VỚI ID ẨN NHỎ GỌN =====
+        // Bạn có thể giấu ID bằng cách gắn nó trực tiếp lên cuối link
+        // Ví dụ: giadunggreen.online/?AKfycbyOVX-fVMdPR2VdF...
 
         countdown: { hours: 2, minutes: 45, seconds: 30 },
 
@@ -434,17 +430,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         let targetUrl = CONFIG.googleSheetURL; // Lấy link cấu hình gốc mặc định
 
-        // Kiểm tra xem trên đường link có mã nào trùng với sheetMap không (vd: ?abcxyz)
-        if (CONFIG.sheetMap) {
-            for (const key in CONFIG.sheetMap) {
-                if (urlParams.has(key)) {
-                    targetUrl = `https://script.google.com/macros/s/${CONFIG.sheetMap[key]}/exec`;
-                    break;
-                }
-            }
+        // Trích xuất ID trực tiếp từ URL nếu nó là tham số đầu tiên (ẩn đi dạng key=value để bảo mật)
+        // Ví dụ: giadunggreen.online/?AKfycbXYZ123...
+        const rawParams = window.location.search.substring(1).split('&');
+        if (rawParams.length > 0 && rawParams[0].length > 40 && !rawParams[0].includes('=')) {
+            // Đây chắc chắn là ID của App Script vì nó rất dài và đứng đơn độc
+            targetUrl = `https://script.google.com/macros/s/${rawParams[0]}/exec`;
         }
         
-        // Dự phòng cho trường hợp truyền URL trực tiếp
+        // Dự phòng cho trường hợp truyền minh bạch theo kiểu cũ
         if (targetUrl === CONFIG.googleSheetURL) {
             if (urlParams.has('sheet_url')) {
                 // Trường hợp user truyền nguyên cả đường link dài
