@@ -304,11 +304,28 @@
         constructor() {
             this.orderEl = document.getElementById('orderCount');
             this.orders = 47;
+            
+            // Views fluctuation
+            this.viewEl = document.getElementById('viewCount');
+            this.views = 128;
 
             setInterval(() => {
                 this.orders += Math.floor(Math.random() * 3) + 1;
                 if (this.orderEl) this.orderEl.textContent = this.orders;
             }, 45000);
+
+            // Fluctuate views every 3-7 seconds
+            setInterval(() => {
+                // Random change between -6 and +8
+                const change = Math.floor(Math.random() * 15) - 6;
+                this.views += change;
+                
+                // Keep views bounded between 95 and 210
+                if (this.views < 95) this.views = 95 + Math.floor(Math.random() * 10);
+                if (this.views > 210) this.views = 210 - Math.floor(Math.random() * 10);
+                
+                if (this.viewEl) this.viewEl.textContent = this.views;
+            }, Math.floor(Math.random() * 4000) + 3000);
 
             // Stock countdown
             this.stock = 23;
