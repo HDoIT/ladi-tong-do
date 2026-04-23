@@ -444,6 +444,11 @@
             if (typeof gtag === 'function') {
                 gtag('event', 'purchase', { currency: 'VND', value: total });
             }
+
+            // Meta Pixel conversion tracking
+            if (typeof fbq === 'function') {
+                fbq('track', 'Purchase', { currency: 'VND', value: total });
+            }
         }
     };
 
