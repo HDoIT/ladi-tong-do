@@ -15,7 +15,17 @@ const HEADERS = ['Thời gian', 'Họ tên', 'SĐT', 'Địa chỉ', 'Gói', 'T�
 
 function doPost(e) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const data = JSON.parse(e.postData.contents);
+    let ss;
+    
+    // Nếu có customSheetId truyền từ Web gửi lên, Script Mẹ sẽ mở File Google Sheet đó
+    if (data.customSheetId && data.customSheetId.length > 20) {
+      ss = SpreadsheetApp.openById(data.customSheetId);
+    } else {
+      // Mặc định điền vào file Sheet chứa Script Mẹ nếu Web không truyền ID
+      ss = SpreadsheetApp.getActiveSpreadsheet();
+    }
+    
     let sheet = ss.getSheetByName(SHEET_NAME);
 
     // Tự tạo sheet + header nếu chưa có
@@ -26,7 +36,6 @@ function doPost(e) {
       formatHeaders_(sheet);
     }
 
-    const data = JSON.parse(e.postData.contents);
     const timestamp = Utilities.formatDate(new Date(), 'Asia/Ho_Chi_Minh', 'dd/MM/yyyy HH:mm:ss');
 
     // Ghi đơn hàng
