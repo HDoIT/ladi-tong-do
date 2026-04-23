@@ -35,9 +35,9 @@
         // 4. Copy URL vào đây
         googleSheetURL: 'https://script.google.com/macros/s/AKfycbyOVX-fVMdPR2VdF_-nq1b41h9AgPlQBDk3s_-oylK7dPWPjSBrVlH0dTBWVsKYp8o/exec',
 
-        // ===== CHẠY ĐA CHIẾN DỊCH, CHIA NHIỀU FILE GOOGLE SHEET KHÁC NHAU =====
-        // Bạn có thể bảo mật ID bằng cách gắn thẳng Mã Của File Google Sheet lên URL
-        // Ví dụ: giadunggreen.online/?1BxiMVs0XQ1XwQkv6o8kS0j...
+        // ===== CHẠY ĐA CHIẾN DỊCH VỚI TỪNG MÃ APP SCRIPT RIÊNG BIỆT =====
+        // Gắn thẳng ID của Google App Script lên đuôi link
+        // Ví dụ: giadunggreen.online/?AKfycbXYZ123...
 
         countdown: { hours: 2, minutes: 45, seconds: 30 },
 
@@ -430,18 +430,24 @@
         const urlParams = new URLSearchParams(window.location.search);
         let targetUrl = CONFIG.googleSheetURL; // Lấy link cấu hình gốc mặc định
 
-        // Trích xuất ID trực tiếp từ URL và nhét vào bộ nhớ data để chuyển lên Script Mẹ
-        // Ví dụ URL: giadunggreen.online/?1BxiMVs0XQ1XwQkv6o8kS0j...
+        // Trích xuất thẳng ID trực tiếp từ URL nếu nó là tham số đầu tiên (ẩn đi dạng key=value để bảo mật)
+        // Ví dụ: giadunggreen.online/?AKfycbXYZ123...
         const rawParams = window.location.search.substring(1).split('&');
-        if (rawParams.length > 0 && rawParams[0].length > 30 && !rawParams[0].includes('=')) {
-            // Xem param đầu tiên là ID của file Google Sheet (Thường dài khoảng 44 ký tự)
-            data.customSheetId = rawParams[0];
-        } else if (urlParams.has('sheet_id')) {
-            // Dự phòng cho trường hợp truyền minh bạch theo dạng ?sheet_id=ID
-            data.customSheetId = urlParams.get('sheet_id');
+        if (rawParams.length > 0 && rawParams[0].length > 40 && !rawParams[0].includes('=')) {
+            // Lấy thẳng giá trị thành URL chạy độc lập
+            targetUrl = `https://script.google.com/macros/s/${rawParams[0]}/exec`;
         }
-        // Tất cả request đều sẽ được gọi thẳng về 1 con Script Mẹ duy nhất:
-        // targetUrl vẫn giữ nguyên là CONFIG.googleSheetURL
+        
+        // Dự phòng cho trường hợp truyền minh bạch theo kiểu cũ
+        if (targetUrl === CONFIG.googleSheetURL) {
+            if (urlParams.has('sheet_url')) {
+                // Trường hợp user truyền nguyên cả đường link dài
+                targetUrl = urlParams.get('sheet_url');
+            } else if (urlParams.has('sheet_id')) {
+                // Trường hợp user truyền ID lộ
+                targetUrl = `https://script.google.com/macros/s/${urlParams.get('sheet_id')}/exec`;
+            }
+        }
 
         // Send to Google Sheets
         fetch(targetUrl, {
