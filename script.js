@@ -36,11 +36,11 @@
         googleSheetURL: 'https://script.google.com/macros/s/AKfycbyOVX-fVMdPR2VdF_-nq1b41h9AgPlQBDk3s_-oylK7dPWPjSBrVlH0dTBWVsKYp8o/exec',
 
         // ===== DANH SÁCH TEAM ẨN DANH =====
-        // Cách dùng URL: giadunggreen.online/?team=hung -> Khách hàng chỉ thấy tên, code tự map vào ID Sheet đằng sau
+        // Cách dùng URL: giadunggreen.online/?abcxyz -> Code tự map vào ID Sheet đằng sau
         sheetMap: {
-            'hung': 'Khai_bao_ID_Script_cua_Hung_o_day',
-            'lan': 'Khai_bao_ID_Script_cua_Lan_o_day',
-            // Bạn có thể thêm bao nhiêu tuỳ ý theo cú pháp 'tên_biệt_danh': 'Mã_ID_Sheet'
+            'abcxyz': 'Khai_bao_ID_Script_cua_sheet_ABCXYZ_o_day',
+            'xyzabc': 'Khai_bao_ID_Script_cua_sheet_XYZABC_o_day',
+            // Bạn có thể thêm bao nhiêu tuỳ ý theo cú pháp 'tham_số': 'Mã_ID_Sheet'
         },
 
         countdown: { hours: 2, minutes: 45, seconds: 30 },
@@ -434,16 +434,25 @@
         const urlParams = new URLSearchParams(window.location.search);
         let targetUrl = CONFIG.googleSheetURL; // Lấy link cấu hình gốc mặc định
 
-        const teamName = urlParams.get('team');
-        if (teamName && CONFIG.sheetMap && CONFIG.sheetMap[teamName]) {
-            // Trường hợp khách để nguyên alias: ?team=hung -> Map ra link gốc ẩn phía sau
-            targetUrl = `https://script.google.com/macros/s/${CONFIG.sheetMap[teamName]}/exec`;
-        } else if (urlParams.has('sheet_url')) {
-            // Trường hợp user truyền nguyên cả đường link dài
-            targetUrl = urlParams.get('sheet_url');
-        } else if (urlParams.has('sheet_id')) {
-            // Trường hợp user truyền ID lộ
-            targetUrl = `https://script.google.com/macros/s/${urlParams.get('sheet_id')}/exec`;
+        // Kiểm tra xem trên đường link có mã nào trùng với sheetMap không (vd: ?abcxyz)
+        if (CONFIG.sheetMap) {
+            for (const key in CONFIG.sheetMap) {
+                if (urlParams.has(key)) {
+                    targetUrl = `https://script.google.com/macros/s/${CONFIG.sheetMap[key]}/exec`;
+                    break;
+                }
+            }
+        }
+        
+        // Dự phòng cho trường hợp truyền URL trực tiếp
+        if (targetUrl === CONFIG.googleSheetURL) {
+            if (urlParams.has('sheet_url')) {
+                // Trường hợp user truyền nguyên cả đường link dài
+                targetUrl = urlParams.get('sheet_url');
+            } else if (urlParams.has('sheet_id')) {
+                // Trường hợp user truyền ID lộ
+                targetUrl = `https://script.google.com/macros/s/${urlParams.get('sheet_id')}/exec`;
+            }
         }
 
         // Send to Google Sheets
