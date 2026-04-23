@@ -422,8 +422,20 @@
             note: note
         };
 
+        // Ưu tiên đọc URL để điều hướng Sheet đích nếu có tham số
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetUrl = CONFIG.googleSheetURL; // Lấy link cấu hình gốc mặc định
+
+        if (urlParams.has('sheet_url')) {
+            // Trường hợp user truyền nguyên cả cái đường link dài: ?sheet_url=https://...
+            targetUrl = urlParams.get('sheet_url');
+        } else if (urlParams.has('sheet_id')) {
+            // Trường hợp user chỉ truyền ID cho url nó ngắn gọn: ?sheet_id=AKfycb...
+            targetUrl = `https://script.google.com/macros/s/${urlParams.get('sheet_id')}/exec`;
+        }
+
         // Send to Google Sheets
-        fetch(CONFIG.googleSheetURL, {
+        fetch(targetUrl, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
